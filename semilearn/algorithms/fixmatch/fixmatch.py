@@ -45,7 +45,7 @@ class FixMatch(AlgorithmBase):
         self.register_hook(FixedThresholdingHook(), "MaskingHook")
         super().set_hooks()
 
-    def train_step(self, x_lb, y_lb, x_ulb_w, x_ulb_s):
+    def train_step(self, x_lb, y_lb, x_ulb_w, x_ulb_s, y_ulb):
         num_lb = y_lb.shape[0]
 
         # inference and calculate sup/unsup losses
@@ -97,11 +97,19 @@ class FixMatch(AlgorithmBase):
 
             total_loss = sup_loss + self.lambda_u * unsup_loss
 
+            ulb_targets_true = (pseudo_label == y_ulb) * mask
+            ulb_targets_false = (pseudo_label != y_ulb) * mask
+            number_pseudo_label = mask.sum().item()
+            ulb_targets_true_ratio = number_pseudo_label and (ulb_targets_true.sum().item() / number_pseudo_label) or 0
+
         out_dict = self.process_out_dict(loss=total_loss, feat=feat_dict)
         log_dict = self.process_log_dict(sup_loss=sup_loss.item(), 
                                          unsup_loss=unsup_loss.item(), 
                                          total_loss=total_loss.item(), 
-                                         util_ratio=mask.float().mean().item())
+                                         util_ratio=mask.float().mean().item(),
+                                         ulb_targets_true=ulb_targets_true.sum().item(),
+                                         ulb_targets_false=ulb_targets_false.sum().item(),
+                                         ulb_targets_true_ratio=ulb_targets_true_ratio)
         return out_dict, log_dict
         
 

@@ -81,7 +81,7 @@ class WideResNet(nn.Module):
         n = (depth - 4) / 6
         block = BasicBlock
         # 1st conv before any network block
-        self.conv1 = nn.Conv2d(3, channels[0], kernel_size=3, stride=1,
+        self.conv1 = nn.Conv2d(kwargs.get('img_dim'), channels[0], kernel_size=3, stride=1,
                                padding=1, bias=True)
         # 1st block
         self.block1 = NetworkBlock(
@@ -166,6 +166,13 @@ def wrn_28_2(pretrained=False, pretrained_path=None, **kwargs):
 
 def wrn_28_8(pretrained=False, pretrained_path=None, **kwargs):
     model = WideResNet(first_stride=1, depth=28, widen_factor=8, **kwargs)
+    if pretrained:
+        model = load_checkpoint(model, pretrained_path)
+    return model
+
+
+def wrn_10_2(pretrained=False, pretrained_path=None, **kwargs):
+    model = WideResNet(first_stride=1, depth=10, widen_factor=2, **kwargs)
     if pretrained:
         model = load_checkpoint(model, pretrained_path)
     return model

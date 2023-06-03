@@ -115,7 +115,7 @@ class AlgorithmBase:
         """
         if self.rank != 0 and self.distributed:
             torch.distributed.barrier()
-        dataset_dict = get_dataset(self.args, self.algorithm, self.args.dataset, self.args.num_labels, self.args.num_classes, self.args.data_dir, self.args.include_lb_to_ulb)
+        dataset_dict = get_dataset(self.args, self.algorithm, self.args.dataset, self.args.num_labels, self.args.num_classes, self.args.data_dir, self.args.include_lb_to_ulb, self.print_fn)
         if dataset_dict is None:
             return dataset_dict
 
@@ -187,14 +187,14 @@ class AlgorithmBase:
         """
         initialize model
         """
-        model = self.net_builder(num_classes=self.num_classes, pretrained=self.args.use_pretrain, pretrained_path=self.args.pretrain_path)
+        model = self.net_builder(num_classes=self.num_classes, pretrained=self.args.use_pretrain, pretrained_path=self.args.pretrain_path, img_dim=self.args.img_dim)
         return model
 
     def set_ema_model(self):
         """
         initialize ema model from model
         """
-        ema_model = self.net_builder(num_classes=self.num_classes)
+        ema_model = self.net_builder(num_classes=self.num_classes, img_dim=self.args.img_dim)
         ema_model.load_state_dict(self.model.state_dict())
         return ema_model
 
@@ -364,7 +364,8 @@ class AlgorithmBase:
         self.model.train()
 
         eval_dict = {eval_dest+'/loss': total_loss / total_num, eval_dest+'/top-1-acc': top1, 
-                     eval_dest+'/balanced_acc': balanced_top1, eval_dest+'/precision': precision, eval_dest+'/recall': recall, eval_dest+'/F1': F1}
+                     eval_dest+'/balanced_acc': balanced_top1, eval_dest+'/precision': precision,
+                     eval_dest+'/recall': recall, eval_dest+'/F1': F1, eval_dest+'/confusion_matrix': cf_mat}
         if return_logits:
             eval_dict[eval_dest+'/logits'] = y_logits
         return eval_dict

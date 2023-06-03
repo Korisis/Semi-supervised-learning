@@ -108,6 +108,7 @@ def get_config():
     ## cv dataset arguments
     parser.add_argument('--img_size', type=int, default=32)
     parser.add_argument('--crop_ratio', type=float, default=0.875)
+    parser.add_argument('--img_dim', type=int, default=3)
 
     ## nlp dataset arguments 
     parser.add_argument('--max_length', type=int, default=512)

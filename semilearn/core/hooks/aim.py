@@ -4,6 +4,16 @@
 import os
 import aim
 from .hook import Hook
+from sklearn.metrics import ConfusionMatrixDisplay
+import matplotlib.pyplot as plt
+
+
+def get_confusion_matrix_aim_figure(cm):
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+    _ = disp.plot(values_format='.2f')
+    fig = disp.figure_
+    plt.close(disp.figure_)
+    return aim.Image(fig)
 
 
 class AimHook(Hook):
@@ -13,15 +23,16 @@ class AimHook(Hook):
 
     def __init__(self):
         super().__init__()
-        self.log_key_list = ['train/sup_loss', 'train/unsup_loss', 'train/total_loss', 'train/util_ratio', 
+        self.log_key_list = ['train/sup_loss', 'train/unsup_loss', 'train/total_loss', 'train/util_ratio',
+                             'train/ulb_targets_true', 'train/ulb_targets_false', 'train/ulb_targets_true_ratio',
                              'train/run_time', 'train/prefetch_time', 'lr',
-                             'eval/top-1-acc', 'eval/precision', 'eval/recall', 'eval/F1']
+                             'eval/loss', 'eval/top-1-acc', 'eval/precision', 'eval/recall', 'eval/F1']
 
     def before_run(self, algorithm):
         # initialize aim run
         name = algorithm.save_name
         project = algorithm.save_dir.split('/')[-1]
-        self.run = aim.Run(experiment=name, repo='/mnt/default/projects/USB_formal_run/221124/aim_data')
+        self.run = aim.Run(experiment=name, repo='/mnt/c/Users/Korisis/switchdrive/wods/Semi-supervised-learning/saved_models/classic_cv')
 
         # set configuration
         self.run['hparams'] = algorithm.args.__dict__
@@ -47,3 +58,4 @@ class AimHook(Hook):
         
         if self.every_n_iters(algorithm, algorithm.num_eval_iter):
             self.run.track(algorithm.best_eval_acc, name='eval/best-acc', step=algorithm.it)
+            self.run.track(get_confusion_matrix_aim_figure(algorithm.log_dict.get('eval/confusion_matrix')), name='confusion matrix', step=algorithm.it)

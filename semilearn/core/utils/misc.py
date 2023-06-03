@@ -99,7 +99,8 @@ class TBLog:
             suffix = ''
         if self.use_tensorboard:
             for key, value in log_dict.items():
-                self.writer.add_scalar(suffix + key, value, it)
+                if key != 'eval/confusion_matrix':
+                    self.writer.add_scalar(suffix + key, value, it)
 
 
 class Bn_Controller:
