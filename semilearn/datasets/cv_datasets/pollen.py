@@ -6,6 +6,7 @@ import json
 import torch
 import numpy as np
 import pandas as pd
+from sklearn.model_selection import train_test_split
 import math
 
 from torchvision import transforms
@@ -27,10 +28,8 @@ def get_pollen(args, alg, name, num_labels, num_classes, data_dir='./data', incl
 
     df = pd.read_pickle(data_path)
     df['holo_image_0'] = df['holo_image_0'].apply(lambda x: x.astype('f'))
-    df = df.sample(frac=1, random_state=args.seed).reset_index(drop=True)
 
-    df_train = df[:int(len(df) * 0.8)]
-    df_test = df[int(len(df) * 0.8):].reset_index(drop=True)
+    df_train, df_test = train_test_split(df, test_size=0.2, random_state=args.seed, stratify=df['species'])
     
     train_data = np.array(df_train['holo_image_0'])
     train_targets = np.array(df_train['species'])
