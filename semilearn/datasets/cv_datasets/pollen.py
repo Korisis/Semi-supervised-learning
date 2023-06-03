@@ -49,7 +49,7 @@ def get_pollen(args, alg, name, num_labels, num_classes, data_dir='./data', incl
         transforms.Resize(crop_size),
         transforms.RandomCrop(crop_size, padding=int(crop_size * (1 - crop_ratio)), padding_mode='reflect'),
         transforms.RandomHorizontalFlip(),
-        RandAugment(3, 5),
+        RandAugment(3, 5, exclude_color_aug=True),
         transforms.ToTensor(),
         transforms.Normalize(mean[name], std[name])
     ])
