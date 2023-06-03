@@ -16,23 +16,22 @@ from semilearn.datasets.utils import split_ssl_data
 
 
 mean, std = {}, {}
-mean['pollen'] = [59045.69]
+mean['pollen'] = [220.83]
 
-std['pollen'] = [6739.53]
+std['pollen'] = [35.47]
 
 
 def get_pollen(args, alg, name, num_labels, num_classes, data_dir='./data', include_lb_to_ulb=True, logger=None):
     
     data_dir = os.path.join(data_dir, name.lower())
-    data_path = os.path.join(data_dir, 'wods_pollen_data.pkl')
+    data_path = os.path.join(data_dir, 'wods_pollen_data_uint8.pkl')
 
     df = pd.read_pickle(data_path)
-    df['holo_image_0'] = df['holo_image_0'].apply(lambda x: x.astype('f'))
 
     df_train, df_test = train_test_split(df, test_size=0.2, random_state=args.seed, stratify=df['species'])
     
     train_data = np.array(df_train['holo_image_0'])
-    train_targets = np.array(df_train['species'])
+    train_targets = np.array(df_train['species'], dtype=torch.LongTensor)
     
     crop_size = args.img_size
     crop_ratio = args.crop_ratio
@@ -83,7 +82,7 @@ def get_pollen(args, alg, name, num_labels, num_classes, data_dir='./data', incl
 
     if alg == 'fullysupervised':
         lb_data = train_data
-        lb_targets = train_targets.astype(torch.LongTensor)
+        lb_targets = train_targets
 
     lb_dset = BasicDataset(alg, lb_data, lb_targets, num_classes, transform_weak, False, None, False)
 
